@@ -5,6 +5,7 @@ const iTunes = require('../providers/iTunes')
 const Audnexus = require('../providers/Audnexus')
 const FantLab = require('../providers/FantLab')
 const AudiobookCovers = require('../providers/AudiobookCovers')
+const XimalayaProvider = require('../providers/XimalayaProvider')
 const CustomProviderAdapter = require('../providers/CustomProviderAdapter')
 const Logger = require('../Logger')
 const { levenshteinDistance, levenshteinSimilarity, escapeRegExp, isValidASIN } = require('../utils/index')
@@ -21,9 +22,10 @@ class BookFinder {
     this.audnexus = new Audnexus()
     this.fantLab = new FantLab()
     this.audiobookCovers = new AudiobookCovers()
+    this.ximalaya = new XimalayaProvider()
     this.customProviderAdapter = new CustomProviderAdapter()
 
-    this.providers = ['google', 'itunes', 'openlibrary', 'fantlab', 'audiobookcovers', 'audible', 'audible.ca', 'audible.uk', 'audible.au', 'audible.fr', 'audible.de', 'audible.jp', 'audible.it', 'audible.in', 'audible.es']
+    this.providers = ['google', 'itunes', 'openlibrary', 'fantlab', 'audiobookcovers', 'audible', 'audible.ca', 'audible.uk', 'audible.au', 'audible.fr', 'audible.de', 'audible.jp', 'audible.it', 'audible.in', 'audible.es', 'ximalaya']
 
     this.verbose = false
   }
@@ -592,6 +594,8 @@ class BookFinder {
       books = await this.getFantLabResults(title, author)
     } else if (provider === 'audiobookcovers') {
       books = await this.getAudiobookCoversResults(title)
+    } else if (provider === 'ximalaya') {
+      books = await this.ximalaya.search(title, author, this.#providerResponseTimeout)
     } else {
       books = await this.getGoogleBooksResults(title, author)
     }

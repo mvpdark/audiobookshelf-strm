@@ -25,7 +25,8 @@ const providerMap = {
   'audible.it': 'Audible.it',
   'audible.in': 'Audible.in',
   'audible.es': 'Audible.es',
-  audnexus: 'Audnexus'
+  audnexus: 'Audnexus',
+  ximalaya: '喜马拉雅 (Ximalaya)'
 }
 
 /**
