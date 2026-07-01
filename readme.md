@@ -62,6 +62,33 @@ https://your-storage.example.com/audiobooks/book1.mp3
 | `server/managers/CoverManager.js` | Extracts cover art from remote audio via `remoteUrl` |
 | `server/scanner/LibraryItemScanData.js` | Added `strmLibraryFiles` getter |
 
+## Built-in Ximalaya (喜马拉雅) Metadata Provider
+
+This fork also includes a **native Ximalaya metadata provider** for Chinese audiobooks, eliminating the need to run a separate `abs-ximalaya` container.
+
+### How it works
+
+1. When matching metadata for a book, select **"喜马拉雅 (Ximalaya)"** from the provider dropdown.
+2. The server searches Ximalaya's album database using your book's title and author.
+3. Results include album title, author/narrator, description, cover art, and duration.
+4. Select the best match to populate your library item's metadata.
+
+### Features
+
+- Search Ximalaya albums by title and author
+- Automatic cover art extraction
+- Duration estimation from album tracks
+- Chinese-friendly display name in the provider list
+- Works alongside all other metadata providers
+
+### Files added/modified for Ximalaya support
+
+| File | Change |
+|------|--------|
+| `server/providers/XimalayaProvider.js` | **New** - Ximalaya album search and metadata extraction |
+| `server/finders/BookFinder.js` | Registered Ximalaya as a native book provider |
+| `server/controllers/SearchController.js` | Added "喜马拉雅 (Ximalaya)" to provider name map |
+
 ---
 
 ### Features
