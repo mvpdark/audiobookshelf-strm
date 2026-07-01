@@ -1,3 +1,4 @@
+const Path = require('path')
 const { AudioMimeType } = require('../../utils/constants')
 const AudioMetaTags = require('../metadata/AudioMetaTags')
 const FileMetadata = require('../metadata/FileMetadata')
@@ -107,6 +108,16 @@ class AudioFile {
 
   get mimeType() {
     const format = this.metadata.format.toUpperCase()
+    // For STRM files, infer mime type from the remote URL extension if possible
+    if (format === 'STRM' && this.remoteUrl) {
+      const urlExt = Path.extname(new URL(this.remoteUrl).pathname).slice(1).toLowerCase()
+      const inferredFormat = urlExt.toUpperCase()
+      if (AudioMimeType[inferredFormat]) {
+        return AudioMimeType[inferredFormat]
+      }
+      // Default to mpeg for STRM files when extension is unknown
+      return AudioMimeType.MP3
+    }
     if (AudioMimeType[format]) {
       return AudioMimeType[format]
     } else {

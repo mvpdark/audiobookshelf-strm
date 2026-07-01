@@ -159,6 +159,17 @@ class AudioFileScanner {
         Logger.warn(`[AudioFileScanner] STRM file is empty: "${filePath}"`)
         return null
       }
+      // Validate that the content looks like a URL
+      try {
+        const parsed = new URL(url)
+        if (!['http:', 'https:', 'rtmp:', 'rtmps:'].includes(parsed.protocol)) {
+          Logger.warn(`[AudioFileScanner] STRM file contains unsupported protocol "${parsed.protocol}": "${filePath}"`)
+          return null
+        }
+      } catch (e) {
+        Logger.warn(`[AudioFileScanner] STRM file content is not a valid URL "${url}": "${filePath}"`)
+        return null
+      }
       return url
     } catch (error) {
       Logger.error(`[AudioFileScanner] Failed to read STRM file: "${filePath}"`, error)

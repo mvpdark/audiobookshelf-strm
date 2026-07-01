@@ -2,7 +2,8 @@ const axios = require('axios')
 const Logger = require('../Logger')
 
 class XimalayaProvider {
-  #responseTimeout = 10000
+  #responseTimeout = 30000
+  #detailTimeout = 15000
   #baseSearchUrl = 'https://www.ximalaya.com/revision/search/main'
   #baseAlbumUrl = 'https://www.ximalaya.com/revision/album/v1/getTracksList'
   #coverBaseUrl = 'https://imagev2.xmcdn.com'
@@ -116,7 +117,7 @@ class XimalayaProvider {
    * @param {number} timeout
    * @returns {Promise<Object|null>}
    */
-  async getAlbumDetail(albumId, timeout = this.#responseTimeout) {
+  async getAlbumDetail(albumId, timeout = this.#detailTimeout) {
     if (!timeout || isNaN(timeout)) timeout = this.#responseTimeout
 
     const url = `${this.#baseAlbumUrl}?albumId=${albumId}&pageNum=1&pageSize=1`

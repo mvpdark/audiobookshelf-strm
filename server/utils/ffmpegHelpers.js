@@ -9,6 +9,7 @@ const { filePathToPOSIX, copyToExisting } = require('./fileUtils')
 
 function escapeSingleQuotes(path) {
   // A ' within a quoted string is escaped with '\'' in ffmpeg (see https://www.ffmpeg.org/ffmpeg-utils.html#Quoting-and-escaping)
+  // filePathToPOSIX only converts backslashes on Windows, which is fine for URLs
   return filePathToPOSIX(path).replace(/'/g, "'\\''")
 }
 
