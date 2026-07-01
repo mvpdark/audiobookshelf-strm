@@ -154,7 +154,7 @@ class AudioFileScanner {
   readStrmUrl(filePath) {
     try {
       const fs = require('fs')
-      const url = fs.readFileSync(filePath, 'utf-8').trim()
+      let url = fs.readFileSync(filePath, 'utf-8').trim()
       if (!url) {
         Logger.warn(`[AudioFileScanner] STRM file is empty: "${filePath}"`)
         return null
@@ -170,10 +170,36 @@ class AudioFileScanner {
         Logger.warn(`[AudioFileScanner] STRM file content is not a valid URL "${url}": "${filePath}"`)
         return null
       }
+      // Encode non-ASCII characters in the URL path to prevent ffprobe errors
+      url = this.encodeUrlPath(url)
       return url
     } catch (error) {
       Logger.error(`[AudioFileScanner] Failed to read STRM file: "${filePath}"`, error)
       return null
+    }
+  }
+
+  /**
+   * Encode non-ASCII characters in URL path while preserving the rest
+   * @param {string} url
+   * @returns {string}
+   */
+  encodeUrlPath(url) {
+    try {
+      const parsed = new URL(url)
+      // Encode each path segment separately to preserve slashes
+      const encodedPath = parsed.pathname.split('/').map(segment => {
+        // Only encode if segment contains non-ASCII characters
+        if (/[^\x00-\x7F]/.test(segment)) {
+          return encodeURIComponent(segment)
+        }
+        return segment
+      }).join('/')
+      parsed.pathname = encodedPath
+      return parsed.toString()
+    } catch (e) {
+      // If parsing fails, return original URL
+      return url
     }
   }
 
