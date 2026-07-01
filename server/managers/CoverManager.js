@@ -233,7 +233,9 @@ class CoverManager {
       return null
     }
 
-    const success = await extractCoverArt(audioFileWithCover.metadata.path, coverFilePath)
+    // For STRM files, use the remote URL to extract cover art
+    const coverSourcePath = audioFileWithCover.remoteUrl || audioFileWithCover.metadata.path
+    const success = await extractCoverArt(coverSourcePath, coverFilePath)
     if (success) {
       await CacheManager.purgeCoverCache(libraryItemId)
       return coverFilePath

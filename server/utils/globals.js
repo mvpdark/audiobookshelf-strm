@@ -1,9 +1,11 @@
 const globals = {
   SupportedImageTypes: ['png', 'jpg', 'jpeg', 'webp'],
-  SupportedAudioTypes: ['m4b', 'mp3', 'm4a', 'flac', 'opus', 'ogg', 'oga', 'mp4', 'aac', 'wma', 'aiff', 'aif', 'wav', 'webm', 'webma', 'mka', 'awb', 'caf', 'mpg', 'mpeg'],
+  SupportedAudioTypes: ['m4b', 'mp3', 'm4a', 'flac', 'opus', 'ogg', 'oga', 'mp4', 'aac', 'wma', 'aiff', 'aif', 'wav', 'webm', 'webma', 'mka', 'awb', 'caf', 'mpg', 'mpeg', 'strm'],
   SupportedEbookTypes: ['epub', 'pdf', 'mobi', 'azw3', 'cbr', 'cbz'],
   TextFileTypes: ['txt', 'nfo'],
-  MetadataFileTypes: ['opf', 'abs', 'xml', 'json']
+  MetadataFileTypes: ['opf', 'abs', 'xml', 'json'],
+  // STRM files are text files containing a remote URL
+  IsStrmFile: (ext) => ext?.toLowerCase() === '.strm'
 }
 
 module.exports = globals

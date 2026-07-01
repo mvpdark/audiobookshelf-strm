@@ -31,6 +31,9 @@ class AudioFile {
     /** @type {AudioMetaTags} */
     this.metaTags = null
 
+    // Remote URL for STRM files
+    this.remoteUrl = null
+
     this.manuallyVerified = false
     this.exclude = false
     this.error = null
@@ -65,7 +68,8 @@ class AudioFile {
       chapters: this.chapters,
       embeddedCoverArt: this.embeddedCoverArt,
       metaTags: this.metaTags?.toJSON() || {},
-      mimeType: this.mimeType
+      mimeType: this.mimeType,
+      remoteUrl: this.remoteUrl
     }
   }
 
@@ -96,6 +100,7 @@ class AudioFile {
     this.channelLayout = data.channelLayout
     this.chapters = data.chapters
     this.embeddedCoverArt = data.embeddedCoverArt || null
+    this.remoteUrl = data.remoteUrl || null
 
     this.metaTags = new AudioMetaTags(data.metaTags || {})
   }

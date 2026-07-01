@@ -16,6 +16,54 @@
 
 Audiobookshelf is a self-hosted audiobook and podcast server.
 
+> **This fork (`audiobookshelf-strm`) adds native STRM file support**, allowing you to stream remote audio files without storing them locally. Original repository: [advplyr/audiobookshelf](https://github.com/advplyr/audiobookshelf).
+
+## STRM Support
+
+This fork extends Audiobookshelf to recognize `.strm` files as valid audio sources. A STRM file is a plain text file containing a single remote URL (e.g., a direct link to an audio file hosted on a cloud storage or media server).
+
+### How it works
+
+1. Place `.strm` files in your library folders alongside (or instead of) regular audio files.
+2. Each `.strm` file contains one line: the direct URL to the remote audio file.
+3. During library scan, Audiobookshelf will:
+   - Read the URL from the `.strm` file.
+   - Probe the remote audio file via `ffprobe` to extract metadata (duration, bitrate, chapters, etc.).
+   - Treat it as a normal audiobook/podcast episode in the library.
+4. When playing:
+   - **Direct Play**: The client receives the remote URL directly, saving server bandwidth.
+   - **Transcode**: FFmpeg streams from the remote URL via HLS, just like local files.
+
+### Example STRM file
+
+```
+https://your-storage.example.com/audiobooks/book1.mp3
+```
+
+### Supported features for STRM files
+
+- Library scanning & metadata extraction
+- Cover art extraction from remote audio
+- Direct play (client streams directly from remote URL)
+- Server-side transcoding / HLS streaming
+- Progress sync, bookmarks, and chapters
+- Download requests redirect to the remote URL
+
+### Files modified for STRM support
+
+| File | Change |
+|------|--------|
+| `server/utils/globals.js` | Added `.strm` to supported audio types |
+| `server/scanner/AudioFileScanner.js` | Reads remote URL from `.strm` and probes it |
+| `server/objects/files/AudioFile.js` | Added `remoteUrl` field |
+| `server/models/Book.js` | Uses `remoteUrl` for direct-play track URLs |
+| `server/controllers/LibraryItemController.js` | Redirects STRM file requests/downloads to remote URL |
+| `server/utils/ffmpegHelpers.js` | Uses `remoteUrl` in FFmpeg concat files for transcoding |
+| `server/managers/CoverManager.js` | Extracts cover art from remote audio via `remoteUrl` |
+| `server/scanner/LibraryItemScanData.js` | Added `strmLibraryFiles` getter |
+
+---
+
 ### Features
 
 - Fully **open-source**, including the [android & iOS app](https://github.com/advplyr/audiobookshelf-app) _(in beta)_

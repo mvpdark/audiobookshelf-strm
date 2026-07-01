@@ -103,6 +103,11 @@ class LibraryItemScanData {
     return this.libraryFiles.filter(lf => globals.SupportedAudioTypes.includes(lf.metadata.ext?.slice(1).toLowerCase() || ''))
   }
 
+  /** @type {LibraryItem.LibraryFileObject[]} */
+  get strmLibraryFiles() {
+    return this.libraryFiles.filter(lf => globals.IsStrmFile(lf.metadata.ext))
+  }
+
   /** @type {LibraryFileModifiedObject[]} */
   get imageLibraryFilesModified() {
     return this.libraryFilesModified.filter(lf => globals.SupportedImageTypes.includes(lf.old.metadata.ext?.slice(1).toLowerCase() || ''))

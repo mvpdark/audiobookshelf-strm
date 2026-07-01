@@ -33,7 +33,9 @@ async function writeConcatFile(tracks, outputPath, startTime = 0) {
 
   var tracksToInclude = tracks.filter((t) => t.index >= trackToStartWithIndex)
   var trackPaths = tracksToInclude.map((t) => {
-    var line = "file '" + escapeSingleQuotes(t.metadata.path) + "'\n" + `duration ${t.duration}`
+    // For STRM files, use the remote URL in the concat file
+    var filePath = t.remoteUrl || t.metadata.path
+    var line = "file '" + escapeSingleQuotes(filePath) + "'\n" + `duration ${t.duration}`
     return line
   })
   var inputstr = trackPaths.join('\n\n')

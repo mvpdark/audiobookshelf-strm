@@ -972,7 +972,9 @@ class LibraryItemController {
       return res.sendStatus(404)
     }
 
-    const ffprobeData = await AudioFileScanner.probeAudioFile(audioFile.metadata.path)
+    // For STRM files, probe the remote URL instead of the local file
+    const probeTarget = audioFile.remoteUrl || audioFile.metadata.path
+    const ffprobeData = await AudioFileScanner.probeAudioFile(probeTarget)
     res.json(ffprobeData)
   }
 
@@ -984,6 +986,15 @@ class LibraryItemController {
    */
   async getLibraryFile(req, res) {
     const libraryFile = req.libraryFile
+
+    // Check if this is a STRM file - redirect to remote URL
+    if (libraryFile.metadata.ext?.toLowerCase() === '.strm') {
+      const audioFile = req.libraryItem.getAudioFileWithIno(req.params.fileid)
+      if (audioFile?.remoteUrl) {
+        Logger.debug(`[LibraryItemController] Redirecting STRM file to remote URL: ${audioFile.remoteUrl}`)
+        return res.redirect(audioFile.remoteUrl)
+      }
+    }
 
     if (global.XAccel) {
       const encodedURI = encodeUriPath(global.XAccel + libraryFile.metadata.path)
@@ -1073,6 +1084,15 @@ class LibraryItemController {
     if (!req.user.canDownload) {
       Logger.error(`[LibraryItemController] User "${req.user.username}" without download permission attempted to download file "${libraryFile.metadata.path}"`)
       return res.sendStatus(403)
+    }
+
+    // Check if this is a STRM file - redirect to remote URL
+    if (libraryFile.metadata.ext?.toLowerCase() === '.strm') {
+      const audioFile = req.libraryItem.getAudioFileWithIno(req.params.fileid)
+      if (audioFile?.remoteUrl) {
+        Logger.info(`[LibraryItemController] Redirecting STRM download to remote URL: ${audioFile.remoteUrl}`)
+        return res.redirect(audioFile.remoteUrl)
+      }
     }
 
     Logger.info(`[LibraryItemController] User "${req.user.username}" requested download for item "${req.libraryItem.media.title}" file at "${libraryFile.metadata.path}"`)

@@ -296,7 +296,12 @@ class Book extends Model {
       const track = structuredClone(af)
       track.title = af.metadata.filename
       track.startOffset = startOffset
-      track.contentUrl = `/api/items/${libraryItemId}/file/${track.ino}`
+      // For STRM files, use the remote URL directly for direct play
+      if (af.remoteUrl) {
+        track.contentUrl = af.remoteUrl
+      } else {
+        track.contentUrl = `/api/items/${libraryItemId}/file/${track.ino}`
+      }
       startOffset += track.duration
       return track
     })

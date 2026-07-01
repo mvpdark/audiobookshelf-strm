@@ -147,6 +147,26 @@ class AudioFileScanner {
   }
 
   /**
+   * Read remote URL from STRM file
+   * @param {string} filePath
+   * @returns {string|null}
+   */
+  readStrmUrl(filePath) {
+    try {
+      const fs = require('fs')
+      const url = fs.readFileSync(filePath, 'utf-8').trim()
+      if (!url) {
+        Logger.warn(`[AudioFileScanner] STRM file is empty: "${filePath}"`)
+        return null
+      }
+      return url
+    } catch (error) {
+      Logger.error(`[AudioFileScanner] Failed to read STRM file: "${filePath}"`, error)
+      return null
+    }
+  }
+
+  /**
    *
    * @param {string} mediaType
    * @param {LibraryItem.LibraryFileObject} libraryFile
@@ -154,10 +174,24 @@ class AudioFileScanner {
    * @returns {Promise<AudioFile>}
    */
   async scan(mediaType, libraryFile, mediaMetadataFromScan) {
-    const probeData = await prober.probe(libraryFile.metadata.path)
+    const isStrm = libraryFile.metadata.ext?.toLowerCase() === '.strm'
+    let probeTarget = libraryFile.metadata.path
+    let remoteUrl = null
+
+    if (isStrm) {
+      remoteUrl = this.readStrmUrl(libraryFile.metadata.path)
+      if (!remoteUrl) {
+        Logger.error(`[AudioFileScanner] Failed to read STRM file: "${libraryFile.metadata.path}"`)
+        return null
+      }
+      probeTarget = remoteUrl
+      Logger.debug(`[AudioFileScanner] Probing remote URL from STRM: ${remoteUrl}`)
+    }
+
+    const probeData = await prober.probe(probeTarget)
 
     if (probeData.error) {
-      Logger.error(`[AudioFileScanner] ${probeData.error} : "${libraryFile.metadata.path}"`)
+      Logger.error(`[AudioFileScanner] ${probeData.error} : "${probeTarget}"`)
       return null
     }
 
@@ -175,6 +209,11 @@ class AudioFileScanner {
       audioFile.discNumFromFilename = discNumber
     }
     audioFile.setDataFromProbe(libraryFile, probeData)
+
+    // For STRM files, store the remote URL
+    if (isStrm && remoteUrl) {
+      audioFile.remoteUrl = remoteUrl
+    }
 
     return audioFile
   }
