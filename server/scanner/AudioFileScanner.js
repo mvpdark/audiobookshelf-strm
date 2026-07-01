@@ -296,14 +296,23 @@ class AudioFileScanner {
    * @returns {Promise<AudioFile[]>}
    */
   async executeMediaFileScans(mediaType, libraryItemScanData, audioLibraryFiles) {
-    const batchSize = 32
+    // Detect if we have STRM files - use smaller batch size and add delays for remote URLs
+    const hasStrmFiles = audioLibraryFiles.some(lf => lf.metadata.ext?.toLowerCase() === '.strm')
+    const batchSize = hasStrmFiles ? 4 : 32
+    const delayBetweenBatches = hasStrmFiles ? 1000 : 0  // 1 second delay for STRM batches
     const results = []
+
     for (let batch = 0; batch < audioLibraryFiles.length; batch += batchSize) {
       const proms = []
       for (let i = batch; i < Math.min(batch + batchSize, audioLibraryFiles.length); i++) {
         proms.push(this.scan(mediaType, audioLibraryFiles[i], libraryItemScanData.mediaMetadata))
       }
       results.push(...(await Promise.all(proms).then((scanResults) => scanResults.filter((sr) => sr))))
+
+      // Add delay between batches for STRM files to avoid overwhelming the remote server
+      if (delayBetweenBatches > 0 && batch + batchSize < audioLibraryFiles.length) {
+        await new Promise(resolve => setTimeout(resolve, delayBetweenBatches))
+      }
     }
 
     return results
