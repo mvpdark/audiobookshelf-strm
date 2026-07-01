@@ -229,11 +229,44 @@ class AudioFileScanner {
 
     if (probeData.error) {
       Logger.error(`[AudioFileScanner] ${probeData.error} : "${probeTarget}"`)
+      // For STRM files, if ffprobe fails (e.g., 403/5XX from remote server),
+      // create a minimal AudioFile so the item can still be added to the library
+      if (isStrm && remoteUrl) {
+        Logger.warn(`[AudioFileScanner] Creating minimal AudioFile for STRM due to probe failure: "${libraryFile.metadata.filename}"`)
+        const audioFile = new AudioFile()
+        audioFile.trackNumFromMeta = null
+        audioFile.discNumFromMeta = null
+        if (mediaType === 'book') {
+          const { trackNumber, discNumber } = this.getTrackAndDiscNumberFromFilename(mediaMetadataFromScan, libraryFile)
+          audioFile.trackNumFromFilename = trackNumber
+          audioFile.discNumFromFilename = discNumber
+        }
+        audioFile.setDataFromProbe(libraryFile, probeData)
+        audioFile.remoteUrl = remoteUrl
+        audioFile.duration = 0  // Unknown duration
+        return audioFile
+      }
       return null
     }
 
     if (!probeData.audioStream) {
       Logger.error('[AudioFileScanner] Invalid audio file no audio stream')
+      // Same fallback for STRM files without audio stream info
+      if (isStrm && remoteUrl) {
+        Logger.warn(`[AudioFileScanner] Creating minimal AudioFile for STRM without audio stream: "${libraryFile.metadata.filename}"`)
+        const audioFile = new AudioFile()
+        audioFile.trackNumFromMeta = null
+        audioFile.discNumFromMeta = null
+        if (mediaType === 'book') {
+          const { trackNumber, discNumber } = this.getTrackAndDiscNumberFromFilename(mediaMetadataFromScan, libraryFile)
+          audioFile.trackNumFromFilename = trackNumber
+          audioFile.discNumFromFilename = discNumber
+        }
+        audioFile.setDataFromProbe(libraryFile, probeData)
+        audioFile.remoteUrl = remoteUrl
+        audioFile.duration = 0
+        return audioFile
+      }
       return null
     }
 
