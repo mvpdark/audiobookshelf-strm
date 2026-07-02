@@ -225,7 +225,23 @@ class AudioFileScanner {
       Logger.debug(`[AudioFileScanner] Probing remote URL from STRM: ${remoteUrl}`)
     }
 
-    const probeData = await prober.probe(probeTarget)
+    // For STRM files, add a timeout to prevent ffprobe from hanging indefinitely
+    let probeData
+    if (isStrm) {
+      const probeTimeout = 15000 // 15 seconds timeout for remote URLs
+      probeData = await Promise.race([
+        prober.probe(probeTarget),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('PROBE_TIMEOUT')), probeTimeout))
+      ]).catch((error) => {
+        if (error.message === 'PROBE_TIMEOUT') {
+          Logger.warn(`[AudioFileScanner] ffprobe timed out after ${probeTimeout}ms for STRM: "${probeTarget}"`)
+          return { error: 'Probe timeout', timedOut: true }
+        }
+        return { error: error.message }
+      })
+    } else {
+      probeData = await prober.probe(probeTarget)
+    }
 
     if (probeData.error) {
       Logger.error(`[AudioFileScanner] ${probeData.error} : "${probeTarget}"`)
