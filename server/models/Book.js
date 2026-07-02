@@ -280,6 +280,13 @@ class Book extends Model {
       Logger.error(`[Book] checkCanDirectPlay: supportedMimeTypes is not an array`, supportedMimeTypes)
       return false
     }
+    // For STRM files, always allow direct play (client will stream from remote URL)
+    // Server-side transcoding is not feasible for STRM because ffprobe/ffmpeg
+    // often cannot access the remote URLs directly
+    if (this.includedAudioFiles.some((af) => af.remoteUrl)) {
+      Logger.debug(`[Book] checkCanDirectPlay: Forcing direct play for STRM files`)
+      return true
+    }
     return this.includedAudioFiles.every((af) => supportedMimeTypes.includes(af.mimeType))
   }
 
